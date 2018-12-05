@@ -12,7 +12,16 @@ namespace day_two
         {
             ChecksumService csService = new ChecksumService();
 
-            ShowChecksumOfInstances(csService);
+            //ShowChecksumOfInstances(csService);
+
+            GetOneOffMatchingId(csService);
+        }
+
+        private static void GetOneOffMatchingId(ChecksumService csService)
+        {
+            string results = csService.GetMatchingIDsByOneOff(csService.GetInputValues());
+            Console.WriteLine(results);
+            Console.ReadLine();
         }
 
         private static void ShowChecksumOfInstances(ChecksumService csService)
