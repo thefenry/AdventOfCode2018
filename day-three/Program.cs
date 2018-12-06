@@ -12,12 +12,11 @@ namespace day_three
             _fabricService = new FabricService();
 
             MeasureFabric();
-
-            _fabricService.GetSoloClaim();
+            GetSoloCloth();
 
             Console.ReadLine();
         }
-
+               
         private static void MeasureFabric()
         {
             var fabricArray = _fabricService.StartMeasuringTheFabric();
@@ -39,6 +38,11 @@ namespace day_three
 
 
             Console.WriteLine($"There are {_fabricService.GetSquareInchCount()} squares");
+        }
+
+        private static void GetSoloCloth()
+        {
+            Console.WriteLine($"This is the id that does not overlap: {_fabricService.GetSoloClaim()}");
         }
     }
 }

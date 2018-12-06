@@ -75,12 +75,7 @@ namespace day_three.Services
                         else
                         {
                             if (_fabricTemplateArray[topEdge + r, leftEdge + c] != "x")
-                            {
-                                if (!_overlappingIds.Contains(fabric.Id))
-                                {
-                                    _overlappingIds.Add(fabric.Id);
-                                }
-
+                            {                                
                                 if (!_overlappingIds.Contains(int.Parse(_fabricTemplateArray[topEdge + r, leftEdge + c])))
                                 {
                                     _overlappingIds.Add(int.Parse(_fabricTemplateArray[topEdge + r, leftEdge + c]));
@@ -90,7 +85,10 @@ namespace day_three.Services
                                 _fabricTemplateArray[topEdge + r, leftEdge + c] = "x";
                             }
 
-                            _overlappingIds.Remove(fabric.Id);
+                            if (!_overlappingIds.Contains(fabric.Id))
+                            {
+                                _overlappingIds.Add(fabric.Id);
+                            }
                         }
                     }
                 }
@@ -107,8 +105,14 @@ namespace day_three.Services
         public int GetSoloClaim()
         {
             var soloItem = _fabricMeasurementsList.Where(x => !_overlappingIds.Contains(x.Id)).Select(x => x.Id).ToList();
-
-            return 0;
+            if (soloItem.Count > 1)
+            {
+                throw new Exception("Too many Items");
+            }
+            else
+            {
+                return soloItem.FirstOrDefault();
+            }
         }
     }
 }
