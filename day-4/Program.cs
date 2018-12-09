@@ -6,58 +6,116 @@ using System.Reflection;
 
 namespace day_4
 {
-    class BasicActivity
+    class GuardsMinutesDetails
     {
-        public DateTime ActivityDate { get; set; }
-
-        public string ActivitySummary { get; set; }
-    }
-
-    class GuardActivityDetail
-    {
-        public string GuardId { get; set; }
-
-        public DateTime ShiftStartDate { get; set; }
-
-        public List<Activity> Activities { get; set; } = new List<Activity>();
-
-        public int TotalTimeAsleep { get; set; }
-    }
-
-    public class Activity
-    {
-        public Activity(int minute, string type, DateTime activityDate)
-        {
-            this.ActivityType = type;
-            MinuteActivity = minute;
-            ActivityDate = activityDate;
-        }
-
-        public int MinuteActivity { get; set; }
-
-        public string ActivityType { get; set; }
-
-        public DateTime ActivityDate { get; set; }
+        public int GuardId { get; set; }
+        public Dictionary<int, int> GuardMinuteAsleep { get; set; }
     }
 
     class Program
     {
         private static bool foundNumber;
+        private static List<BasicActivity> _sortedGuardActivities;
+        private static List<IGrouping<string, GuardActivityDetail>> _groupedGuards;
 
         static void Main(string[] args)
         {
             string path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"GuardSchedules.txt");
             string[] inputs = File.ReadAllLines(path);
+            _sortedGuardActivities = ParseAndSortGuardData(inputs);
 
-            List<BasicActivity> guardActivities = ParseBasicActivty(inputs);
+            GetCommonSleepMinuteIdMultiple();
 
-            List<BasicActivity> sortedGuardActivities = guardActivities.OrderBy(c => c.ActivityDate).ToList();
+            GuardMinuteFrequencyIdMultiple();
 
-            List<GuardActivityDetail> guardActivityDetails = GetGuardsShiftActivitySchedule(sortedGuardActivities);
+            Console.ReadLine();
+        }
 
-            List<IGrouping<string, GuardActivityDetail>> groupedGuards = guardActivityDetails.GroupBy(c => c.GuardId).ToList();
+        private static void GuardMinuteFrequencyIdMultiple()
+        {
+            List<GuardsMinutesDetails> guardsMinutesDetails = GetGuardsMinutesAsleep();
 
-            List<GuardActivityDetail> guardWithMostAsleepTime = GetGuardWithMostAsleepTime(groupedGuards);
+            int guardId = 0;
+            int highestFrequencyMin = -1;
+            int frenquencyValue = -1;
+
+            foreach (GuardsMinutesDetails guardsMinutesDetail in guardsMinutesDetails)
+            {
+
+                guardsMinutesDetail.GuardMinuteAsleep = guardsMinutesDetail.GuardMinuteAsleep.OrderBy(x => x.Key).ToDictionary(x => x.Key, c => c.Value);
+
+                foreach (KeyValuePair<int, int> item in guardsMinutesDetail.GuardMinuteAsleep)
+                {
+
+                    if (item.Value > frenquencyValue)
+                    {
+                        //int frenqValuen = frenquencyValue;
+                        frenquencyValue = item.Value;
+                        highestFrequencyMin = item.Key;
+                        guardId = guardsMinutesDetail.GuardId;
+
+                    }
+                }
+
+            }
+
+            Console.WriteLine(highestFrequencyMin * guardId);
+
+        }
+
+        private static List<GuardsMinutesDetails> GetGuardsMinutesAsleep()
+        {
+            List<GuardsMinutesDetails> guardsMinutesDetails = new List<GuardsMinutesDetails>();
+
+            for (int i = 0; i < _groupedGuards.Count; i++)
+            {
+                IGrouping<string, GuardActivityDetail> guard = _groupedGuards[i];
+
+                GuardsMinutesDetails newGuard = new GuardsMinutesDetails
+                {
+                    GuardId = int.Parse(guard.Key.Split('#', StringSplitOptions.RemoveEmptyEntries)[0]),
+                    GuardMinuteAsleep = new Dictionary<int, int>()
+                };
+
+                List<GuardActivityDetail> guardActivitiesList = guard.ToList();
+
+                for (int j = 0; j < guardActivitiesList.Count; j++)
+                {
+                    List<Activity> activities = guardActivitiesList[j].Activities;
+
+                    for (int k = 0; k < activities.Count; k++)
+                    {
+                        Activity guardActivity = activities[k];
+
+                        if (guardActivity.ActivityType == "falls")
+                        {
+                            for (int l = guardActivity.MinuteActivity; l < activities[k + 1].MinuteActivity + 1; l++)
+                            {
+                                if (newGuard.GuardMinuteAsleep.ContainsKey(l))
+                                {
+                                    newGuard.GuardMinuteAsleep[l] += 1;
+                                }
+                                else
+                                {
+                                    newGuard.GuardMinuteAsleep.Add(l, 1);
+                                }
+                            }
+                        }
+                    }
+                }
+                guardsMinutesDetails.Add(newGuard);
+            }
+
+            return guardsMinutesDetails;
+        }
+
+        private static void GetCommonSleepMinuteIdMultiple()
+        {
+            List<GuardActivityDetail> guardActivityDetails = GetGuardsShiftActivitySchedule(_sortedGuardActivities);
+
+            _groupedGuards = guardActivityDetails.GroupBy(c => c.GuardId).ToList();
+
+            List<GuardActivityDetail> guardWithMostAsleepTime = GetGuardWithMostAsleepTime(_groupedGuards);
 
             int guardId = int.Parse(guardWithMostAsleepTime.First().GuardId.Split('#', StringSplitOptions.RemoveEmptyEntries)[0]);
 
@@ -77,7 +135,7 @@ namespace day_4
                             if (activities[i + 1].MinuteActivity >= activityToCheckAgainst.MinuteActivity)
                             {
                                 int range2Min = activityToCheckAgainst.MinuteActivity;
-                               
+
                                 // answer 67558
                                 Console.WriteLine(range2Min * guardId);
                                 foundNumber = true;
@@ -92,9 +150,14 @@ namespace day_4
                     break;
                 }
             }
+        }
 
+        private static List<BasicActivity> ParseAndSortGuardData(string[] inputs)
+        {
+            List<BasicActivity> guardActivities = ParseBasicActivty(inputs);
 
-            Console.ReadLine();
+            List<BasicActivity> _sortedGuardActivities = guardActivities.OrderBy(c => c.ActivityDate).ToList();
+            return _sortedGuardActivities;
         }
 
         private static List<GuardActivityDetail> GetGuardWithMostAsleepTime(List<IGrouping<string, GuardActivityDetail>> groupedGuards)
