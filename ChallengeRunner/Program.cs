@@ -25,9 +25,14 @@ namespace ChallengeRunner
         private static void RunDayFiveChallenges()
         {
             Day5Polymers polymerProblem = new Day5Polymers();
-            string cleanPolymerSegment = polymerProblem.ScanAndCleanPolymer();
 
-            Console.WriteLine(cleanPolymerSegment.Length);
+            //string cleanPolymerSegment = polymerProblem.ScanAndCleanPolymer();
+
+            //Console.WriteLine(cleanPolymerSegment.Length);
+
+            int polymerCount = polymerProblem.FindAndRemoveBreakingUnit();
+
+            Console.WriteLine($"Smallest Polymer: {polymerCount}");
         }
     }
 }

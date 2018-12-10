@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 
 namespace ChallengesLibrary
@@ -44,5 +46,33 @@ namespace ChallengesLibrary
             return _polymerSegments;
         }
 
+        public int FindAndRemoveBreakingUnit()
+        {
+            List<char> listOfAvailableUnits = _polymerSegments.ToLowerInvariant().Distinct().ToList();
+            string originalPolymer = _polymerSegments;
+            int smallestPolymerCombination = _polymerSegments.Length;
+            string smallestPolymerSegment = string.Empty;
+
+            foreach (char unit in listOfAvailableUnits)
+            {
+                var unitsToRemove = new char[] { unit, char.ToUpperInvariant(unit) };
+
+                _polymerSegments = _polymerSegments.Replace(unit.ToString(), "", StringComparison.InvariantCultureIgnoreCase);
+                //_polymerSegments = _polymerSegments.TrimStart(unitsToRemove);
+
+                string cleanedPolymer = this.ScanAndCleanPolymer();
+
+                if (cleanedPolymer.Length < smallestPolymerCombination)
+                {
+                    smallestPolymerCombination = cleanedPolymer.Length;
+                    smallestPolymerSegment = cleanedPolymer;
+                }
+
+                _polymerSegments = originalPolymer;
+            }
+
+
+            return smallestPolymerCombination;
+        }
     }
 }
