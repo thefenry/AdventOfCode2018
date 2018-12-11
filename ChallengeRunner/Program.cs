@@ -15,6 +15,9 @@ namespace ChallengeRunner
                 case "5":
                     RunDayFiveChallenges();
                     break;
+                case "7":
+                    RunDaySevenChallenges();
+                    break;
                 default:
                     break;
             }
@@ -33,6 +36,12 @@ namespace ChallengeRunner
             int polymerCount = polymerProblem.FindAndRemoveBreakingUnit();
 
             Console.WriteLine($"Smallest Polymer: {polymerCount}");
+        }
+
+        private static void RunDaySevenChallenges()
+        {
+            Day7Instructions day7 = new Day7Instructions();
+            Console.WriteLine($"steps order: {day7.GetInstructionsOrder()}");
         }
     }
 }
